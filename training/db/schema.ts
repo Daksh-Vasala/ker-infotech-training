@@ -5,10 +5,16 @@ import {
   pgEnum,
   pgTable,
   text,
-  varchar,
 } from "drizzle-orm/pg-core";
 
+export const TaskStatus = pgEnum("task_status", [
+  "pending",
+  "in_progress",
+  "completed",
+]);
+
 export const UserRole = pgEnum("user_role", ["admin", "subscriber"]);
+
 export const users = pgTable("users", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userName: text("user_name").notNull(),
@@ -29,14 +35,14 @@ export const options = pgTable("options", {
   optionValue: text("option_value"),
 });
 
-export const todos = pgTable("todos", {
+export const tasks = pgTable("tasks", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: TaskStatus("status").notNull().default("pending"),
   userId: integer("user_id")
     .notNull()
     .references(() => users.id),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: text("description"),
-  completed: boolean("completed").notNull().default(false),
   createdAt: date("created_at").notNull().defaultNow(),
   updatedAt: date("updated_at").notNull().defaultNow(),
 });
