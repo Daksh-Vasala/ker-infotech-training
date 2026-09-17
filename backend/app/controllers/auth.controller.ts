@@ -15,7 +15,7 @@ export const signup = async (req: Request, res: Response) => {
       phoneNumber,
       firstName,
       lastName,
-      userRole,
+      userRole = UserRole.Subscriber,
     }: SignUpInput = req.body;
 
     if (!userName || !email || !password || !phoneNumber) {
@@ -86,13 +86,13 @@ export const signin = async (req: Request, res: Response) => {
     if (!userData || userData.length <= 0) {
       return res
         .status(409)
-        .json({ status: false, message: "Invalid credentials password" });
+        .json({ status: false, message: "Invalid credentials" });
     }
 
     if (userData[0].password !== strToMd5(password)) {
       return res
         .status(401)
-        .json({ status: false, message: "Invalid credentials password" });
+        .json({ status: false, message: "Invalid credentials" });
     }
 
     const tokenExpiry = Math.floor(Date.now() / 1000) + 2 * 60 * 60;
