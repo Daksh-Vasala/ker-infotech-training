@@ -59,11 +59,11 @@ const SignIn = () => {
   return (
     <div className="min-vh-100 d-flex justify-content-center align-items-center bg-light">
       <div className="w-100" style={{ maxWidth: "450px" }}>
-        <h1 className="text-center mb-4 fw-bold">Sign In</h1>
+        <h1 className="text-center mb-4 fw-bold text-black">Sign In</h1>
 
         <Card className="shadow border-0">
           <CardBody className="p-4 p-md-5">
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit} color="dark">
               <FormGroup className="mb-4">
                 <Label for="email" className="fw-semibold">
                   Email
@@ -110,7 +110,7 @@ const SignIn = () => {
           </CardBody>
         </Card>
 
-        <p className="text-center text-muted mt-4">
+        <p className="text-center text-muted  mt-4">
           Don't have an account?{" "}
           <Link to="/sign-up" className="text-decoration-none">
             Sign Up

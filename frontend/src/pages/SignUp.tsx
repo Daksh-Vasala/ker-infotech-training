@@ -84,7 +84,7 @@ const SignUp = () => {
   return (
     <div className="min-vh-100 d-flex justify-content-center align-items-center bg-light">
       <div className="w-100" style={{ maxWidth: "450px" }}>
-        <h1 className="text-center mb-4 fw-bold">Sign Up</h1>
+        <h1 className="text-center mb-4 fw-bold text-black">Sign Up</h1>
 
         <Card className="shadow border-0">
           <CardBody className="p-4 p-md-5">
