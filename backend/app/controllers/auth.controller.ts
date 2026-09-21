@@ -26,6 +26,20 @@ export const signup = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
+    const isUserExists = await db
+      .select({
+        email: users.email,
+        password: users.password,
+      })
+      .from(users)
+      .where(eq(users.email, email));
+
+    if (isUserExists && isUserExists.length > 0) {
+      return res.status(400).json({
+        message: "User already exists, please login",
+      });
+    }
+
     const insertedUser = await db.insert(users).values({
       userName,
       email,
@@ -107,7 +121,11 @@ export const signin = async (req: Request, res: Response) => {
 
     const token = jwt.sign(payload, jwtSecret, { expiresIn: tokenExpiry });
 
-    return res.json({ status: true, message: 'User signed in successfully', token });
+    return res.json({
+      status: true,
+      message: "User signed in successfully",
+      token,
+    });
   } catch (error) {
     console.error("Error during sign-in:", error);
     return res.status(500).json({

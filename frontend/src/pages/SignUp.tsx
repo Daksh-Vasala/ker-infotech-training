@@ -17,6 +17,7 @@ import {
 } from "../utils/validate";
 import { isAxiosError } from "axios";
 import api from "../utils/api";
+import { Link } from "react-router";
 
 const SignUp = () => {
   const [userName, setUserName] = useState("");
@@ -25,6 +26,8 @@ const SignUp = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,13 +58,14 @@ const SignUp = () => {
 
   const signup = async () => {
     try {
+      setLoading(true);
       const res = await api.post("/auth/signup", {
         userName,
         email,
         password,
         phoneNumber,
         firstName,
-        lastName
+        lastName,
       });
 
       toast.success(res.data.message || "User signed up successfully");
@@ -72,6 +76,8 @@ const SignUp = () => {
           ? error.response?.data?.message || "Unable to sign in"
           : "Unable to sign in",
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,6 +99,7 @@ const SignUp = () => {
                   type="text"
                   required
                   value={userName}
+                  disabled={loading}
                   onChange={(e) => setUserName(e.target.value)}
                   placeholder="johndoe"
                   className="py-2"
@@ -108,6 +115,7 @@ const SignUp = () => {
                   type="text"
                   required
                   value={email}
+                  disabled={loading}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="xavier@example.com"
                   className="py-2"
@@ -124,6 +132,7 @@ const SignUp = () => {
                   type="password"
                   required
                   value={password}
+                  disabled={loading}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   className="py-2"
@@ -140,6 +149,7 @@ const SignUp = () => {
                   type="text"
                   required
                   value={firstName}
+                  disabled={loading}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="John"
                   className="py-2"
@@ -156,6 +166,7 @@ const SignUp = () => {
                   type="text"
                   required
                   value={lastName}
+                  disabled={loading}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Doe"
                   className="py-2"
@@ -172,6 +183,7 @@ const SignUp = () => {
                   type="text"
                   required
                   value={phoneNumber}
+                  disabled={loading}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="0987654321"
                   className="py-2"
@@ -181,9 +193,10 @@ const SignUp = () => {
               <Button
                 type="submit"
                 color="primary"
-                className="w-100 py-2 fw-semibold"
+                disabled={loading}
+                className={`w-100 py-2 fw-semibold ${loading && "opacity-75"}`}
               >
-                Sign Up
+                {loading ? "Registering..." : "Register"}
               </Button>
             </Form>
           </CardBody>
@@ -191,9 +204,9 @@ const SignUp = () => {
 
         <p className="text-center text-muted mt-4">
           Already have an account?{" "}
-          <a href="/signin" className="text-decoration-none">
+          <Link to="/sign-in" className="text-decoration-none">
             Sign In
-          </a>
+          </Link>
         </p>
       </div>
     </div>

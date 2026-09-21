@@ -12,11 +12,12 @@ import {
 } from "reactstrap";
 import { isEmailValid, isPasswordValid } from "../utils/validate";
 import api from "../utils/api";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -38,10 +39,11 @@ const SignIn = () => {
 
   const signIn = async () => {
     try {
+      setLoading(true);
       const res = await api.post("/auth/signin", { email, password });
       toast.success(res.data.message);
       localStorage.setItem("token", res.data.token);
-      navigate("/tasks")
+      navigate("/tasks");
     } catch (error: unknown) {
       console.log("Error in signing in", error);
       toast.error(
@@ -49,6 +51,8 @@ const SignIn = () => {
           ? error.response?.data?.message || "Unable to sign in"
           : "Unable to sign in",
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,6 +74,7 @@ const SignIn = () => {
                   type="email"
                   required
                   value={email}
+                  disabled={loading}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="xavier@example.com"
                   className="py-2"
@@ -86,6 +91,7 @@ const SignIn = () => {
                   type="password"
                   required
                   value={password}
+                  disabled={loading}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   className="py-2"
@@ -95,9 +101,10 @@ const SignIn = () => {
               <Button
                 type="submit"
                 color="primary"
-                className="w-100 py-2 fw-semibold"
+                disabled={loading}
+                className={`w-100 py-2 fw-semibold ${loading && "opacity-75"}`}
               >
-                Sign In
+                {loading ? "Logging in..." : "Login"}
               </Button>
             </Form>
           </CardBody>
@@ -105,9 +112,9 @@ const SignIn = () => {
 
         <p className="text-center text-muted mt-4">
           Don't have an account?{" "}
-          <a href="/signup" className="text-decoration-none">
+          <Link to="/sign-up" className="text-decoration-none">
             Sign Up
-          </a>
+          </Link>
         </p>
       </div>
     </div>
