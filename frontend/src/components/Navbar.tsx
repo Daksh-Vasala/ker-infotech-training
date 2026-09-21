@@ -29,7 +29,7 @@ const Navbar = () => {
       <ModalHeader>Logout confirmation</ModalHeader>
       <ModalBody>Are you sure you want to logout ?</ModalBody>
       <ModalFooter>
-        <Button onClick={handleLogout}>Yes</Button>
+        <Button className="btn-danger" onClick={handleLogout}>Yes</Button>
         <Button onClick={() => setModal(false)}>No</Button>
       </ModalFooter>
     </Modal>
