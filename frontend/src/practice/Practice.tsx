@@ -34,13 +34,13 @@ const Practice = () => {
     },
     {
       id: 2,
-      name: "Sufya Murai",
+      name: "Gwen stacy",
       department: "HR",
       salary: "50,000",
     },
     {
       id: 3,
-      name: "Meghani S.",
+      name: "Lionel Andres Messi",
       department: "BDE",
       salary: "30,000",
     },
@@ -57,6 +57,14 @@ const Practice = () => {
   const [salary, setSalary] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
+  const resetForm = () => {
+    setName("");
+    setDepartment("");
+    setSalary("");
+    setSelectedEmployee(null);
+    setIsEditing(false);
+  };
+
   const toggleCardModal = () => {
     setcardModal((prev) => !prev);
   };
@@ -67,6 +75,15 @@ const Practice = () => {
 
   const toggleDeleteModal = () => {
     setDeleteModal((prev) => !prev);
+  };
+
+  const startEditing = (e: TypeEmployee) => {
+    setSelectedEmployee(e);
+    setName(e.name);
+    setDepartment(e.department);
+    setSalary(e.salary);
+    setIsEditing(true);
+    toggleFormModal();
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -93,12 +110,27 @@ const Practice = () => {
         ];
       });
 
-      setName("");
-      setDepartment("");
-      setSalary("");
+      resetForm();
     } else {
-      const nothing = false;
-      if (nothing) return;
+      if (!name.trim() || !department.trim() || !salary.trim()) {
+        toast.error("All fields are required");
+        return;
+      }
+
+      setEmployees((prev) =>
+        prev.map((e) =>
+          e.id === selectedEmployee!.id
+            ? {
+                ...e,
+                name: name.trim(),
+                department: department.trim(),
+                salary: salary.trim(),
+              }
+            : e,
+        ),
+      );
+
+      resetForm();
     }
 
     toggleFormModal();
@@ -111,8 +143,8 @@ const Practice = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f7f7f4" }}>
-      <nav className="d-flex flex-column flex-sm-row justify-content-between m-2 p-3 border-bottom">
+    <div className="bg-light min-vh-100">
+      <nav className="d-flex flex-column flex-sm-row justify-content-between m-2 p-3 border-bottom bg-light">
         <h4>Navbar</h4>
 
         <div className="d-flex flex-column flex-sm-row  gap-sm-4">
@@ -123,63 +155,74 @@ const Practice = () => {
         </div>
       </nav>
 
-      <div className="p-2">
-        <Button color="dark" onClick={toggleFormModal}>
-          Add Employee
-        </Button>
-      </div>
-
       <main className="container py-4">
+        <div className="pb-2 text-right w-100 d-flex justify-content-end">
+          <Button
+            color="primary"
+            onClick={() => {
+              resetForm();
+              setFormModal(true);
+            }}
+          >
+            Add Employee
+          </Button>
+        </div>
         <div className="row g-4">
-          {employees.map((e) => (
-            <div key={e.id} className="col-12 col-md-6 col-lg-4">
-              <Card className="border shadow-sm">
-                <CardBody>
-                  <CardTitle className="text-center fw-bold">
-                    {e.name}
-                  </CardTitle>
-                  <CardText className="text-center">{e.department}</CardText>
-                  <CardText className="text-center">₹{e.salary}</CardText>
-                </CardBody>
-                <CardFooter className="d-flex gap-2 border-0">
-                  <Button
-                    color="dark"
-                    outline
-                    className="w-100"
-                    onClick={() => {
-                      setSelectedEmployee(e);
-                      setcardModal(true);
-                    }}
-                  >
-                    View details
-                  </Button>
-                  <Button
-                    color="dark"
-                    outline
-                    className="w-100"
-                    onClick={() => {
-                      setSelectedEmployee(e);
-                      setIsEditing(true);
-                      toggleFormModal();
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    color="dark"
-                    outline
-                    className="w-100"
-                    onClick={() => {
-                      setSelectedEmployee(e);
-                      setDeleteModal(true);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-          ))}
+          {employees.length <= 0 ? (
+            <div className="text-center">No employees...</div>
+          ) : (
+            <>
+              {employees.map((e) => (
+                <div key={e.id} className="col-12 col-md-6 col-lg-4">
+                  <Card className="border shadow-sm">
+                    <CardBody>
+                      <CardTitle className="text-center fw-bold">
+                        {e.name}
+                      </CardTitle>
+                      <CardText className="text-center">
+                        {e.department}
+                      </CardText>
+                      <CardText className="text-center">₹{e.salary}</CardText>
+                    </CardBody>
+                    <CardFooter className="d-flex gap-2 border-0">
+                      <Button
+                        color="secondary"
+                        outline
+                        className="w-100"
+                        onClick={() => {
+                          setSelectedEmployee(e);
+                          setcardModal(true);
+                        }}
+                      >
+                        View details
+                      </Button>
+                      <Button
+                        color="primary"
+                        outline
+                        className="w-100"
+                        onClick={() => {
+                          startEditing(e);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        color="danger"
+                        outline
+                        className="w-100"
+                        onClick={() => {
+                          setSelectedEmployee(e);
+                          setDeleteModal(true);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+              ))}
+            </>
+          )}
           <Modal isOpen={cardModal} toggle={toggleCardModal}>
             <ModalHeader>{selectedEmployee?.name}</ModalHeader>
             <ModalBody>
@@ -209,7 +252,7 @@ const Practice = () => {
                   <Input
                     id="name"
                     placeholder="John Doe"
-                    value={isEditing ? selectedEmployee!.name : name}
+                    value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="fw-semibold"
                   />
@@ -219,9 +262,7 @@ const Practice = () => {
                   <Input
                     id="department"
                     placeholder="IT"
-                    value={
-                      isEditing ? selectedEmployee!.department : department
-                    }
+                    value={department}
                     onChange={(e) => setDepartment(e.target.value)}
                     className="fw-semibold"
                   />
@@ -231,7 +272,7 @@ const Practice = () => {
                   <Input
                     id="salary"
                     placeholder="50000"
-                    value={isEditing ? selectedEmployee!.salary : salary}
+                    value={salary}
                     onChange={(e) => setSalary(e.target.value)}
                     className="fw-semibold"
                   />
@@ -269,7 +310,12 @@ const Practice = () => {
               >
                 Yes
               </Button>
-              <Button className="w-100" onClick={toggleDeleteModal}>
+              <Button
+                color="danger"
+                outline
+                className="w-100"
+                onClick={toggleDeleteModal}
+              >
                 No
               </Button>
             </ModalFooter>
