@@ -109,7 +109,7 @@ export const signin = async (req: Request, res: Response) => {
         .json({ status: false, message: "Invalid credentials" });
     }
 
-    const tokenExpiry = Math.floor(Date.now() / 1000) + 2 * 60 * 60;
+    const tokenExpiry = 2 * 60 * 60;
     const payload = {
       userId: userData[0].id,
       userRole: userData[0].userRole,

@@ -5,6 +5,21 @@ import db from "@/db/db";
 import { tasks, users } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 
+const parsePositiveInteger = (value: unknown): number | undefined => {
+  if (typeof value !== "string" && typeof value !== "number") {
+    return undefined;
+  }
+
+  const parsedValue = Number(value);
+  return Number.isInteger(parsedValue) && parsedValue > 0
+    ? parsedValue
+    : undefined;
+};
+
+const isTaskStatus = (value: unknown): value is TaskStatus =>
+  typeof value === "string" &&
+  Object.values(TaskStatus).includes(value as TaskStatus);
+
 export const createTask = async (
   req: AuthRequest,
   res: Response,
@@ -23,14 +38,14 @@ export const createTask = async (
       });
     }
 
-    if (status && !Object.values(TaskStatus).includes(status)) {
+    if (!isTaskStatus(status)) {
       return res.status(400).json({
         message: "Invalid status value",
       });
     }
 
     // Only admin can create a task for another user
-    if (userId && req.userRole !== "admin") {
+    if (userId !== undefined && req.userRole !== "admin") {
       return res.status(403).json({
         message: "Forbidden: Only admin can create tasks for other users",
       });
@@ -38,7 +53,15 @@ export const createTask = async (
 
     // Admin can create for another user or itself.
     // Subscriber can only create for itself.
-    const userIdToUse = userId || req.userId;
+    const userIdToUse = parsePositiveInteger(
+      userId !== undefined ? userId : req.userId,
+    );
+
+    if (userIdToUse === undefined) {
+      return res.status(400).json({
+        message: "Valid userId is required",
+      });
+    }
 
     const [newTask] = await db
       .insert(tasks)
@@ -46,7 +69,7 @@ export const createTask = async (
         title,
         description,
         status,
-        userId: Number(userIdToUse),
+        userId: userIdToUse,
       })
       .returning();
 
@@ -78,7 +101,9 @@ export const getTask = async (
   try {
     const { id } = req.params;
 
-    if (!id || Number.isNaN(Number(id))) {
+    const taskId = parsePositiveInteger(id);
+
+    if (taskId === undefined) {
       return res.status(400).json({
         status: false,
         message: "Valid Task ID is required",
@@ -107,7 +132,7 @@ export const getTask = async (
       })
       .from(tasks)
       .innerJoin(users, eq(users.id, tasks.userId))
-      .where(eq(tasks.id, Number(id)))
+      .where(eq(tasks.id, taskId))
       .limit(1);
 
     if (data.length === 0) {
@@ -150,9 +175,9 @@ export const getAllTasks = async (
   try {
     const { userId, status } = req.query;
 
-    const userIdToUse = Number(userId ?? req.userId);
+    const userIdToUse = parsePositiveInteger(userId ?? req.userId);
 
-    if (Number.isNaN(userIdToUse)) {
+    if (userIdToUse === undefined) {
       return res.status(400).json({
         status: false,
         message: "Invalid userId",
@@ -251,7 +276,9 @@ export const updateTask = async (
   try {
     const { id } = req.params;
 
-    if (!id || Number.isNaN(Number(id))) {
+    const taskId = parsePositiveInteger(id);
+
+    if (taskId === undefined) {
       return res.status(400).json({
         success: false,
         message: "Valid Task ID is required",
@@ -261,7 +288,7 @@ export const updateTask = async (
     // Admin can update any task.
     // Subscriber can update only their own task.
     const hasOwnership = await checkTaskOwnership(
-      Number(id),
+      taskId,
       Number(req.userId),
       String(req.userRole),
     );
@@ -276,7 +303,7 @@ export const updateTask = async (
     const { title, description, status } = req.body;
 
     // Reject invalid status
-    if (status && !Object.values(TaskStatus).includes(status)) {
+    if (status !== undefined && !isTaskStatus(status)) {
       return res.status(400).json({
         success: false,
         message: "Invalid status value",
@@ -309,7 +336,7 @@ export const updateTask = async (
     const [updatedTask] = await db
       .update(tasks)
       .set(dataToUpdate)
-      .where(eq(tasks.id, Number(id)))
+      .where(eq(tasks.id, taskId))
       .returning();
 
     if (!updatedTask) {
@@ -341,7 +368,9 @@ export const deleteTask = async (
   try {
     const { id } = req.params;
 
-    if (!id || Number.isNaN(Number(id))) {
+    const taskId = parsePositiveInteger(id);
+
+    if (taskId === undefined) {
       return res.status(400).json({
         success: false,
         message: "Valid Task ID is required",
@@ -351,7 +380,7 @@ export const deleteTask = async (
     // Admin can delete any task.
     // Subscriber can delete only their own task.
     const hasOwnership = await checkTaskOwnership(
-      Number(id),
+      taskId,
       Number(req.userId),
       String(req.userRole),
     );
@@ -365,7 +394,7 @@ export const deleteTask = async (
 
     const [deletedTask] = await db
       .delete(tasks)
-      .where(eq(tasks.id, Number(id)))
+      .where(eq(tasks.id, taskId))
       .returning();
 
     if (!deletedTask) {

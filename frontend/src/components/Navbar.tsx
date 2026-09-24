@@ -16,13 +16,13 @@ const Navbar = () => {
       <nav className="navbar navbar-expand-lg bg-light border-bottom shadow-sm">
         <div className="container">
           <h3>Tasks</h3>
-          <button
-            className="btn btn-outline-danger ms-auto px-4"
-            type="button"
+          <Button
+            color="danger"
+            outline
             onClick={() => setModal(true)}
           >
             Logout
-          </button>
+          </Button>
         </div>
       </nav>
       <Modal isOpen={modal}>
