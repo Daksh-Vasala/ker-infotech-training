@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import api from "../utils/api";
+import { toast } from "react-toastify";
+
 type TaskStatus = "pending" | "in_progress" | "completed";
 
 type Task = {
@@ -10,37 +14,6 @@ type Task = {
   updatedAt: string;
 };
 
-const tasks: Task[] = [
-  {
-    id: 1,
-    title: "Set up project dashboard",
-    description:
-      "Create the initial workspace layout and project summary cards.",
-    status: "in_progress",
-    userId: 101,
-    createdAt: "2026-09-20",
-    updatedAt: "2026-09-21",
-  },
-  {
-    id: 2,
-    title: "Prepare API documentation",
-    description: "Document routes, request payloads, and expected responses.",
-    status: "pending",
-    userId: 101,
-    createdAt: "2026-09-18",
-    updatedAt: "2026-09-18",
-  },
-  {
-    id: 3,
-    title: "Deploy staging build",
-    description: "Validate the production build and push the latest version.",
-    status: "completed",
-    userId: 101,
-    createdAt: "2026-09-15",
-    updatedAt: "2026-09-17",
-  },
-];
-
 const statusColors: Record<TaskStatus, string> = {
   pending: "bg-warning-subtle text-warning-emphasis",
   in_progress: "bg-primary-subtle text-primary-emphasis",
@@ -51,6 +24,33 @@ const formatStatus = (status: TaskStatus) =>
   status.replace("_", " ").replace(/\b\w/g, (char) => char.toUpperCase());
 
 const Tasks = () => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const getTasks = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/tasks");
+      console.log(res.data);
+      setTasks(res.data.data);
+    } catch (error: unknown) {
+      console.log("Error in fetching tasks: ", error);
+      const message =
+        typeof error === "object" && error !== null && "response" in error
+          ? (error as { response?: { data?: { message?: string } } }).response
+              ?.data?.message
+          : undefined;
+      toast.error(message || "Failed to fetch tasks");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    getTasks();
+  }, []);
+
   return (
     <main className="bg-light min-vh-100 py-4 py-md-5">
       <div className="container">
@@ -78,51 +78,57 @@ const Tasks = () => {
           </div>
         </div>
 
-        <div className="row g-4">
-          {tasks.map((task) => (
-            <div key={task.id} className="col-12 col-lg-6">
-              <div className="card border-0 shadow-sm rounded-4 h-100">
-                <div className="card-body p-4">
-                  <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
-                    <div>
-                      <h5 className="fw-bold mb-1">{task.title}</h5>
-                      <small className="text-muted">User #{task.userId}</small>
+        {loading ? (
+          <div className="text-center font-lg">Loading...</div>
+        ) : (
+          <div className="row g-4">
+            {tasks.map((task) => (
+              <div key={task.id} className="col-12 col-lg-6">
+                <div className="card border-0 shadow-sm rounded-4 h-100">
+                  <div className="card-body p-4">
+                    <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
+                      <div>
+                        <h5 className="fw-bold mb-1">{task.title}</h5>
+                        <small className="text-muted">
+                          User #{task.userId}
+                        </small>
+                      </div>
+                      <span
+                        className={`badge rounded-pill ${statusColors[task.status]}`}
+                      >
+                        {formatStatus(task.status)}
+                      </span>
                     </div>
-                    <span
-                      className={`badge rounded-pill ${statusColors[task.status]}`}
-                    >
-                      {formatStatus(task.status)}
-                    </span>
+
+                    <p className="text-secondary mb-4">{task.description}</p>
+
+                    <div className="d-flex justify-content-between text-muted small border-top pt-3">
+                      <span>Created: {task.createdAt}</span>
+                      <span>Updated: {task.updatedAt}</span>
+                    </div>
                   </div>
 
-                  <p className="text-secondary mb-4">{task.description}</p>
-
-                  <div className="d-flex justify-content-between text-muted small border-top pt-3">
-                    <span>Created: {task.createdAt}</span>
-                    <span>Updated: {task.updatedAt}</span>
-                  </div>
-                </div>
-
-                <div className="card-footer bg-white border-0 px-4 pb-4 pt-0">
-                  <div className="d-flex gap-2">
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-primary rounded-pill flex-fill"
-                    >
-                      View
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-secondary rounded-pill flex-fill"
-                    >
-                      Edit
-                    </button>
+                  <div className="card-footer bg-white border-0 px-4 pb-4 pt-0">
+                    <div className="d-flex gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary rounded-pill flex-fill"
+                      >
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary rounded-pill flex-fill"
+                      >
+                        Edit
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   );
