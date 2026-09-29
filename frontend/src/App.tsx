@@ -3,7 +3,7 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Practice from "./practice/Practice";
 import Tasks from "./pages/Tasks";
-import MainLayout from "./layout/MainLayout";
+import MainLayout from "./components/layout/MainLayout";
 
 function App() {
   return (

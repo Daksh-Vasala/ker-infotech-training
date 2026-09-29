@@ -10,7 +10,7 @@ export const verifyToken = (
 ): Response | void => {
   try {
     const token =
-      req.headers.authorization?.split(" ")[1] || req.cookies.token;
+      req.headers.authorization?.split(" ")[1] || req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({
@@ -31,9 +31,9 @@ export const verifyToken = (
     next();
   } catch (error) {
     console.error("Error during token verification:", error);
-    return res.status(500).json({
+    return res.status(401).json({
       status: false,
-      message: error instanceof Error ? error.message : "Internal server error",
+      message: "Invalid or expired token",
     });
   }
 };
@@ -54,7 +54,7 @@ export const isAdmin = (
     console.error("Error during admin role verification:", error);
     return res.status(500).json({
       status: false,
-      message: error instanceof Error ? error.message : "Internal server error",
+      message: "Internal server error",
     });
   }
 };

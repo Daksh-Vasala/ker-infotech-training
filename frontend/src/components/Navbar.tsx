@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
+import { Button } from "reactstrap";
+import ConfirmationModal from "./ConfirmationModal";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    setModal(false);
     navigate("/sign-in", { replace: true });
   };
 
@@ -16,25 +18,20 @@ const Navbar = () => {
       <nav className="navbar navbar-expand-lg bg-light border-bottom shadow-sm">
         <div className="container">
           <h3>Tasks</h3>
-          <Button
-            color="danger"
-            outline
-            onClick={() => setModal(true)}
-          >
+          <Button color="danger" outline onClick={() => setModal(true)}>
             Logout
           </Button>
         </div>
       </nav>
-      <Modal isOpen={modal}>
-        <ModalHeader>Logout confirmation</ModalHeader>
-        <ModalBody>Are you sure you want to logout ?</ModalBody>
-        <ModalFooter>
-          <Button className="btn-danger" onClick={handleLogout}>
-            Yes
-          </Button>
-          <Button onClick={() => setModal(false)}>No</Button>
-        </ModalFooter>
-      </Modal>
+      
+      <ConfirmationModal
+        isOpen={modal}
+        title="Log out?"
+        message="Are you sure you want to log out?"
+        confirmLabel="Log out"
+        onConfirm={handleLogout}
+        onCancel={() => setModal(false)}
+      />
     </>
   );
 };

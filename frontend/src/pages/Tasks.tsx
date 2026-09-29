@@ -1,18 +1,11 @@
 import { useEffect, useState } from "react";
 import api from "../utils/api";
 import { toast } from "react-toastify";
+import FormModal from "../components/FormModal";
+import ConfirmationModal from "../components/ConfirmationModal";
+import type { Task, TaskFormData } from "../types/tasks.types";
 
 type TaskStatus = "pending" | "in_progress" | "completed";
-
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  status: TaskStatus;
-  userId: number;
-  createdAt: string;
-  updatedAt: string;
-};
 
 const statusColors: Record<TaskStatus, string> = {
   pending: "bg-warning-subtle text-warning-emphasis",
@@ -20,12 +13,13 @@ const statusColors: Record<TaskStatus, string> = {
   completed: "bg-success-subtle text-success-emphasis",
 };
 
-const formatStatus = (status: TaskStatus) =>
-  status.replace("_", " ").replace(/\b\w/g, (char) => char.toUpperCase());
-
 const Tasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   const getTasks = async () => {
     try {
@@ -36,13 +30,48 @@ const Tasks = () => {
     } catch (error: unknown) {
       console.log("Error in fetching tasks: ", error);
       const message =
-        typeof error === "object" && error !== null && "response" in error
-          ? (error as { response?: { data?: { message?: string } } }).response
-              ?.data?.message
-          : undefined;
+        error instanceof Error ? error.message : "Failed to fetch tasks";
       toast.error(message || "Failed to fetch tasks");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmit = async ({ title, description, status }: TaskFormData) => {
+    if (!title || title === null || title === "") {
+      return toast.error("Title is required");
+    }
+    try {
+      if (!isEdit) {
+        const res = await api.post("/tasks", { title, description, status });
+        toast.success(res.data.message || "Task created successfully");
+      } else {
+        const res = await api.put(`/tasks/${selectedTask!.id}`, {
+          title,
+          description,
+          status,
+        });
+        toast.success(res.data.message || "Task updated successfully");
+      }
+      setIsOpenModal(false);
+      await getTasks();
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!taskToDelete) return;
+
+    try {
+      const res = await api.delete(`/tasks/${taskToDelete.id}`);
+      toast.success(res.data.message || "Deleted");
+      setTaskToDelete(null);
+      await getTasks();
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
     }
   };
 
@@ -72,6 +101,10 @@ const Tasks = () => {
             <button
               type="button"
               className="btn btn-sm btn-primary rounded-pill px-3"
+              onClick={() => {
+                setIsOpenModal(true);
+                setIsEdit(false);
+              }}
             >
               + New task
             </button>
@@ -96,7 +129,7 @@ const Tasks = () => {
                       <span
                         className={`badge rounded-pill ${statusColors[task.status]}`}
                       >
-                        {formatStatus(task.status)}
+                        {task.status}
                       </span>
                     </div>
 
@@ -112,15 +145,21 @@ const Tasks = () => {
                     <div className="d-flex gap-2">
                       <button
                         type="button"
-                        className="btn btn-sm btn-outline-primary rounded-pill flex-fill"
+                        className="btn btn-sm btn-outline-secondary rounded-pill flex-fill"
+                        onClick={() => {
+                          setSelectedTask(task);
+                          setIsEdit(true);
+                          setIsOpenModal(true);
+                        }}
                       >
-                        View
+                        Edit
                       </button>
                       <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary rounded-pill flex-fill"
+                        className="btn btn-sm btn-outline-danger rounded-pill flex-fill"
+                        onClick={() => setTaskToDelete(task)}
                       >
-                        Edit
+                        Delete
                       </button>
                     </div>
                   </div>
@@ -130,6 +169,21 @@ const Tasks = () => {
           </div>
         )}
       </div>
+      <FormModal
+        isOpenModal={isOpenModal}
+        setIsOpenModal={setIsOpenModal}
+        handleSubmit={handleSubmit}
+        isEdit={isEdit}
+        selectedTask={selectedTask}
+      />
+      <ConfirmationModal
+        isOpen={taskToDelete !== null}
+        title="Delete task?"
+        message={`Are you sure you want to delete "${taskToDelete?.title ?? "this task"}"?`}
+        confirmLabel="Delete"
+        onConfirm={handleDelete}
+        onCancel={() => setTaskToDelete(null)}
+      />
     </main>
   );
 };

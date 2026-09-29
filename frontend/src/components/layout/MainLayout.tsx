@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router";
 import { toast } from "react-toastify";
-import Navbar from "../components/Navbar";
+import Navbar from "../Navbar";
 
 const MainLayout = () => {
   const isAuthenticated = localStorage.getItem("token");

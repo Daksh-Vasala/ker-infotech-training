@@ -89,7 +89,7 @@ export const createTask = async (
 
     return res.status(500).json({
       status: false,
-      message: error instanceof Error ? error.message : "Internal server error",
+      message: "Internal server error",
     });
   }
 };
@@ -163,7 +163,7 @@ export const getTask = async (
 
     return res.status(500).json({
       status: false,
-      message: error instanceof Error ? error.message : "Internal server error",
+      message: "Internal server error",
     });
   }
 };
@@ -260,11 +260,11 @@ export const getAllTasks = async (
       data: allTasks,
     });
   } catch (error) {
-    console.error("Error in fetching all tasks:", error);
+    console.error("Error in fetching all tasks: ", error);
 
     return res.status(500).json({
       status: false,
-      message: error instanceof Error ? error.message : "Internal server error",
+      message: "Internal server error",
     });
   }
 };
@@ -356,7 +356,7 @@ export const updateTask = async (
 
     return res.status(500).json({
       status: false,
-      message: error instanceof Error ? error.message : "Internal server error",
+      message: "Internal server error",
     });
   }
 };
@@ -414,7 +414,7 @@ export const deleteTask = async (
 
     return res.status(500).json({
       status: false,
-      message: error instanceof Error ? error.message : "Internal server error",
+      message: "Internal server error",
     });
   }
 };
