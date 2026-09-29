@@ -84,9 +84,11 @@ const FormModal = ({
         </Form>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={() => setIsOpenModal(!isOpenModal)}>Cancel</Button>
-        <Button onClick={() => handleSubmit({ title, description, status })}>
+        <Button color="primary" onClick={() => handleSubmit({ title, description, status })}>
           Save
+        </Button>
+        <Button color="secondary" outline onClick={() => setIsOpenModal(false)}>
+          Cancel
         </Button>
       </ModalFooter>
     </Modal>
