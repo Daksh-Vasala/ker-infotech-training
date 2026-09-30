@@ -280,7 +280,7 @@ export const updateTask = async (
 
     if (taskId === undefined) {
       return res.status(400).json({
-        success: false,
+        status: false,
         message: "Valid Task ID is required",
       });
     }
@@ -305,7 +305,7 @@ export const updateTask = async (
     // Reject invalid status
     if (status !== undefined && !isTaskStatus(status)) {
       return res.status(400).json({
-        success: false,
+        status: false,
         message: "Invalid status value",
       });
     }
@@ -341,7 +341,7 @@ export const updateTask = async (
 
     if (!updatedTask) {
       return res.status(404).json({
-        success: false,
+        status: false,
         message: "Task not found",
       });
     }
@@ -372,7 +372,7 @@ export const deleteTask = async (
 
     if (taskId === undefined) {
       return res.status(400).json({
-        success: false,
+        status: false,
         message: "Valid Task ID is required",
       });
     }
@@ -399,7 +399,7 @@ export const deleteTask = async (
 
     if (!deletedTask) {
       return res.status(404).json({
-        success: false,
+        status: false,
         message: "Task not found",
       });
     }
