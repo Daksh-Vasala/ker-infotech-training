@@ -10,11 +10,11 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <App />
     </BrowserRouter>
-    <ToastContainer stacked
-        hideProgressBar
-        position="top-right"
-        autoClose={2000}
-        style={{ width: "20vw" }} />
-        
+    <ToastContainer
+      stacked
+      hideProgressBar
+      position="top-right"
+      autoClose={2000}
+    />
   </StrictMode>,
 );

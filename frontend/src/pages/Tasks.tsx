@@ -1,17 +1,10 @@
 import { useEffect, useState } from "react";
+import { isAxiosError } from "axios";
 import api from "../utils/api";
 import { toast } from "react-toastify";
 import FormModal from "../components/FormModal";
 import ConfirmationModal from "../components/ConfirmationModal";
-import type { Task, TaskFormData } from "../types/tasks.types";
-
-type TaskStatus = "pending" | "in_progress" | "completed";
-
-const statusColors: Record<TaskStatus, string> = {
-  pending: "bg-warning-subtle text-warning-emphasis",
-  in_progress: "bg-primary-subtle text-primary-emphasis",
-  completed: "bg-success-subtle text-success-emphasis",
-};
+import { TaskStatus, type Task, type TaskFormData } from "../types/tasks.types";
 
 const Tasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -20,14 +13,16 @@ const Tasks = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [status, setStatus] = useState<TaskStatus>();
+  const [isOpenStatusModal, setIsOpenStatusModal] = useState(false);
 
   const getTasks = async () => {
     try {
       setLoading(true);
       const res = await api.get("/tasks");
-      console.log(res.data);
       setTasks(res.data.data);
     } catch (error: unknown) {
+      if (isAxiosError(error) && error.response?.status === 401) return;
       console.log("Error in fetching tasks: ", error);
       const message =
         error instanceof Error ? error.message : "Failed to fetch tasks";
@@ -42,6 +37,7 @@ const Tasks = () => {
       return toast.error("Title is required");
     }
     try {
+      setLoading(true);
       if (!isEdit) {
         const res = await api.post("/tasks", { title, description, status });
         toast.success(res.data.message || "Task created successfully");
@@ -56,8 +52,11 @@ const Tasks = () => {
       setIsOpenModal(false);
       await getTasks();
     } catch (error) {
+      if (isAxiosError(error) && error.response?.status === 401) return;
       console.log(error);
       toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -65,18 +64,36 @@ const Tasks = () => {
     if (!taskToDelete) return;
 
     try {
+      setLoading(true);
       const res = await api.delete(`/tasks/${taskToDelete.id}`);
       toast.success(res.data.message || "Deleted");
       setTaskToDelete(null);
       await getTasks();
     } catch (error) {
+      if (isAxiosError(error) && error.response?.status === 401) return;
       console.log(error);
       toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusChange = async () => {
+    try {
+      setLoading(true);
+      await api.put(`/tasks/${selectedTask!.id}`, { status });
+      await getTasks();
+      toast.success("Status changed");
+    } catch (error) {
+      console.log("Error in changing status: ", error);
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+      setIsOpenStatusModal(false);
     }
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     getTasks();
   }, []);
 
@@ -126,11 +143,21 @@ const Tasks = () => {
                           User #{task.userId}
                         </small>
                       </div>
-                      <span
-                        className={`badge rounded-pill ${statusColors[task.status]}`}
+                      <select
+                        className="form-select w-50"
+                        value={task.status}
+                        onChange={(e) => {
+                          setSelectedTask(task);
+                          setStatus(e.target.value as TaskStatus);
+                          setIsOpenStatusModal(true);
+                        }}
                       >
-                        {task.status}
-                      </span>
+                        <option value={TaskStatus.PENDING}>Pending</option>
+                        <option value={TaskStatus.INPROGRESS}>
+                          In progress
+                        </option>
+                        <option value={TaskStatus.COMPLETED}>Completed</option>
+                      </select>
                     </div>
 
                     <p className="text-secondary mb-4">{task.description}</p>
@@ -175,14 +202,25 @@ const Tasks = () => {
         handleSubmit={handleSubmit}
         isEdit={isEdit}
         selectedTask={selectedTask}
+        loading={loading}
       />
       <ConfirmationModal
         isOpen={taskToDelete !== null}
         title="Delete task?"
         message={`Are you sure you want to delete "${taskToDelete?.title ?? "this task"}"?`}
+        loading={loading}
         confirmLabel="Delete"
         onConfirm={handleDelete}
         onCancel={() => setTaskToDelete(null)}
+      />
+      <ConfirmationModal
+        isOpen={isOpenStatusModal}
+        title="Change status?"
+        message={`Are you sure you want to change the status`}
+        loading={loading}
+        confirmLabel="Change"
+        onConfirm={handleStatusChange}
+        onCancel={() => setIsOpenStatusModal(false)}
       />
     </main>
   );

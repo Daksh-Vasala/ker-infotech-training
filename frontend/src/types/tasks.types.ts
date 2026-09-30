@@ -4,6 +4,7 @@ export interface FormModalProps {
   handleSubmit: (data: TaskFormData) => void;
   isEdit: boolean;
   selectedTask: Task | null
+  loading: boolean
 }
 
 export type Task = {

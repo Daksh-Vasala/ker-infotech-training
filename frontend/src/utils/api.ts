@@ -19,4 +19,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use((response) => response, (error) => {
+  if(axios.isAxiosError(error) && error.response?.status === 401 ){
+    localStorage.removeItem("token");
+  }
+
+  if(window.location.pathname !== "/sign-in"){
+    window.location.replace("/sign-in");
+  }
+
+  return Promise.reject(error)
+})
+
 export default api;

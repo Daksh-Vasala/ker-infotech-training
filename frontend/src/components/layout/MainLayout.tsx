@@ -3,14 +3,11 @@ import { toast } from "react-toastify";
 import Navbar from "../Navbar";
 
 const MainLayout = () => {
-  const isAuthenticated = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
+  const isAuthenticated =
+    token?.trim() && token !== "undefined" && token !== "null";
 
-  if (
-    !isAuthenticated ||
-    isAuthenticated === "undefined" ||
-    isAuthenticated === null ||
-    isAuthenticated === ""
-  ) {
+  if (!isAuthenticated) {
     toast.error("Login to access this page");
     return <Navigate to={"/sign-in"} replace />;
   }

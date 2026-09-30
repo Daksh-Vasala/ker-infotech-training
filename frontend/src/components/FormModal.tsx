@@ -18,6 +18,7 @@ const FormModal = ({
   handleSubmit,
   isEdit,
   selectedTask,
+  loading,
 }: FormModalProps) => {
   const [title, setTitle] = useState(selectedTask?.title ?? "");
   const [description, setDescription] = useState(
@@ -53,6 +54,7 @@ const FormModal = ({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              disabled={loading}
             />
           </FormGroup>
 
@@ -65,11 +67,13 @@ const FormModal = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
+              disabled={loading}
             />
           </FormGroup>
           <FormGroup>
             <Label htmlFor="status">Status</Label>
             <select
+              disabled={loading}
               name="status"
               id="status"
               value={status}
@@ -84,8 +88,12 @@ const FormModal = ({
         </Form>
       </ModalBody>
       <ModalFooter>
-        <Button color="primary" onClick={() => handleSubmit({ title, description, status })}>
-          Save
+        <Button
+          disabled={loading}
+          color="primary"
+          onClick={() => handleSubmit({ title, description, status })}
+        >
+          {loading ? "Saving..." : "Save"}
         </Button>
         <Button color="secondary" outline onClick={() => setIsOpenModal(false)}>
           Cancel
