@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { isAxiosError } from "axios";
 import { toast } from "react-toastify";
 import {
   Button,
   Card,
   CardBody,
+  CardFooter,
+  CardHeader,
   Form,
   FormGroup,
   Input,
@@ -20,7 +22,7 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -59,9 +61,10 @@ const SignIn = () => {
   return (
     <div className="min-vh-100 d-flex justify-content-center align-items-center bg-light">
       <div className="w-100" style={{ maxWidth: "450px" }}>
-        <h1 className="text-center mb-4 fw-bold text-black">Sign In</h1>
-
         <Card className="shadow border-0">
+          <CardHeader className="text-center text-lg mb-4  text-black">
+            <h1 className="fw-bold">Sign in</h1>
+          </CardHeader>
           <CardBody className="p-4 p-md-5">
             <Form onSubmit={handleSubmit} color="dark">
               <FormGroup className="mb-4">
@@ -108,14 +111,15 @@ const SignIn = () => {
               </Button>
             </Form>
           </CardBody>
+          <CardFooter>
+            <p className="text-center text-muted ">
+              Don't have an account?{" "}
+              <Link to="/sign-up" className="text-decoration-none">
+                Sign Up
+              </Link>
+            </p>
+          </CardFooter>
         </Card>
-
-        <p className="text-center text-muted  mt-4">
-          Don't have an account?{" "}
-          <Link to="/sign-up" className="text-decoration-none">
-            Sign Up
-          </Link>
-        </p>
       </div>
     </div>
   );

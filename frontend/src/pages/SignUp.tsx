@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { toast } from "react-toastify";
 import {
   Button,
   Card,
   CardBody,
+  CardFooter,
+  CardHeader,
   Form,
   FormGroup,
   Input,
@@ -29,7 +31,7 @@ const SignUp = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!userName || !email || !password || !phoneNumber) {
       return toast.error(
@@ -84,9 +86,10 @@ const SignUp = () => {
   return (
     <div className="min-vh-100 d-flex justify-content-center align-items-center bg-light">
       <div className="w-100" style={{ maxWidth: "450px" }}>
-        <h1 className="text-center mb-4 fw-bold text-black">Sign Up</h1>
-
         <Card className="shadow border-0">
+          <CardHeader>
+            <h1 className="text-center fw-bold text-black">Sign Up</h1>
+          </CardHeader>
           <CardBody className="p-4 p-md-5">
             <Form onSubmit={handleSubmit}>
               <FormGroup className="mb-4">
@@ -200,14 +203,15 @@ const SignUp = () => {
               </Button>
             </Form>
           </CardBody>
+          <CardFooter>
+            <p className="text-center text-muted">
+              Already have an account?{" "}
+              <Link to="/sign-in" className="text-decoration-none">
+                Sign In
+              </Link>
+            </p>
+          </CardFooter>
         </Card>
-
-        <p className="text-center text-muted mt-4">
-          Already have an account?{" "}
-          <Link to="/sign-in" className="text-decoration-none">
-            Sign In
-          </Link>
-        </p>
       </div>
     </div>
   );
